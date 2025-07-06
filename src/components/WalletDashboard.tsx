@@ -317,29 +317,41 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
       {/* Main Content */}
       <main className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 mx-3 mt-3 h-8">
-            <TabsTrigger 
-              value="overview" 
-              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
+          <div className="flex mx-3 mt-3 h-8 bg-muted rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`flex-1 flex items-center justify-center gap-1 text-xs rounded-md transition-colors ${
+                activeTab === 'overview' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
               <PieChart className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Balance</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="send" 
-              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
+            </button>
+            <button
+              onClick={() => setActiveTab('send')}
+              className={`flex-1 flex items-center justify-center gap-1 text-xs rounded-md transition-colors ${
+                activeTab === 'send' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
               <Send className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Send</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
-              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex-1 flex items-center justify-center gap-1 text-xs rounded-md transition-colors ${
+                activeTab === 'history' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
               <History className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Txs</span>
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
           <div className="flex-1 overflow-y-auto p-3">
             <TabsContent value="overview" className="mt-0">
