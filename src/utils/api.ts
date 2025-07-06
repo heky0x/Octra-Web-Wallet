@@ -73,7 +73,8 @@ export function createTransaction(
   amount: number,
   nonce: number,
   privateKeyBase64: string,
-  publicKeyHex: string
+  publicKeyHex: string,
+  message?: string
 ): Transaction {
   // Convert amount to micro units (multiply by 1,000,000)
   const amountMu = Math.floor(amount * MU_FACTOR);
@@ -84,8 +85,8 @@ export function createTransaction(
   // Create timestamp with small random component
   const timestamp = Date.now() / 1000 + Math.random() * 0.01;
 
-  // Create base transaction object
-  const transaction: Transaction = {
+  // Create base transaction object (without message for signing)
+  const baseTransaction = {
     from: senderAddress,
     to_: recipientAddress,
     amount: amountMu.toString(),
@@ -94,8 +95,18 @@ export function createTransaction(
     timestamp
   };
 
-  // Convert transaction to JSON string for signing
-  const txString = JSON.stringify(transaction, null, 0);
+  // Create the full transaction object (with message if provided)
+  const transaction: Transaction = {
+    ...baseTransaction
+  };
+
+  if (message && message.trim()) {
+    transaction.message = message.trim();
+  }
+
+  // Convert base transaction (without message) to JSON string for signing
+  // This follows the reference implementation where message is excluded from signing
+  const txStringForSigning = JSON.stringify(baseTransaction, null, 0);
   
   // Prepare keys for signing
   const privateKeyBuffer = Buffer.from(privateKeyBase64, 'base64');
@@ -106,8 +117,8 @@ export function createTransaction(
   secretKey.set(privateKeyBuffer, 0);
   secretKey.set(publicKeyBuffer, 32);
 
-  // Sign the transaction
-  const signature = nacl.sign.detached(new TextEncoder().encode(txString), secretKey);
+  // Sign the transaction (without message)
+  const signature = nacl.sign.detached(new TextEncoder().encode(txStringForSigning), secretKey);
 
   // Add signature and public key to transaction
   transaction.signature = Buffer.from(signature).toString('base64');
@@ -242,7 +253,8 @@ export async function fetchTransactionHistory(address: string): Promise<AddressH
           amount: parseFloat(txDetails.parsed_tx.amount),
           timestamp: txDetails.parsed_tx.timestamp,
           status: 'confirmed' as const,
-          type: txDetails.parsed_tx.from.toLowerCase() === address.toLowerCase() ? 'sent' as const : 'received' as const
+          type: txDetails.parsed_tx.from.toLowerCase() === address.toLowerCase() ? 'sent' as const : 'received' as const,
+          message: txDetails.parsed_tx.message || undefined
         };
       } catch (error) {
         console.error('Failed to fetch transaction details for hash:', recentTx.hash, error);
@@ -269,7 +281,8 @@ export async function fetchTransactionHistory(address: string): Promise<AddressH
       amount: parseFloat(tx.amount),
       timestamp: tx.timestamp,
       status: 'pending' as const,
-      type: tx.from.toLowerCase() === address.toLowerCase() ? 'sent' as const : 'received' as const
+      type: tx.from.toLowerCase() === address.toLowerCase() ? 'sent' as const : 'received' as const,
+      message: tx.message || undefined
     }));
     
     // Combine and sort by timestamp (newest first)
@@ -336,7 +349,8 @@ export async function sendMultipleTransactions(transactions: any[]): Promise<str
         txData.amount,
         0, // nonce will be handled properly in real implementation
         txData.privateKey,
-        '' // publicKey will be derived from privateKey
+        '', // publicKey will be derived from privateKey
+        txData.message // Include message if provided
       );
       
       const result = await sendTransaction(transaction);

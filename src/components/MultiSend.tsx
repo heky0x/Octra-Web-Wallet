@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Trash2, AlertTriangle, Wallet as WalletIcon, CheckCircle, ExternalLink } from 'lucide-react';
+import { Users, Plus, Trash2, AlertTriangle, Wallet as WalletIcon, CheckCircle, ExternalLink, MessageSquare } from 'lucide-react';
 import { Wallet } from '../types/wallet';
 import { fetchBalance, sendTransaction, createTransaction } from '../utils/api';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 interface Recipient {
   address: string;
   amount: string;
+  message?: string;
 }
 
 interface MultiSendProps {
@@ -25,11 +27,11 @@ interface MultiSendProps {
 
 export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSuccess }: MultiSendProps) {
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { address: '', amount: '' }
+    { address: '', amount: '', message: '' }
   ]);
   const [isSending, setIsSending] = useState(false);
   const [nonce, setNonce] = useState(0);
-  const [results, setResults] = useState<Array<{ success: boolean; hash?: string; error?: string; recipient: string; amount: string }>>([]);
+  const [results, setResults] = useState<Array<{ success: boolean; hash?: string; error?: string; recipient: string; amount: string; message?: string }>>([]);
   const { toast } = useToast();
 
   // Fetch nonce when wallet changes
@@ -52,7 +54,7 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
   }, [wallet]);
 
   const addRecipient = () => {
-    setRecipients([...recipients, { address: '', amount: '' }]);
+    setRecipients([...recipients, { address: '', amount: '', message: '' }]);
   };
 
   const removeRecipient = (index: number) => {
@@ -124,7 +126,7 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
       let currentNonce = freshBalanceData.nonce;
 
       const validRecipients = recipients.filter(r => r.address && Number(r.amount) > 0);
-      const transactionResults: Array<{ success: boolean; hash?: string; error?: string; recipient: string; amount: string }> = [];
+      const transactionResults: Array<{ success: boolean; hash?: string; error?: string; recipient: string; amount: string; message?: string }> = [];
 
       // Send transactions sequentially to maintain nonce order
       for (let i = 0; i < validRecipients.length; i++) {
@@ -139,7 +141,8 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
             Number(recipient.amount),
             transactionNonce,
             wallet.privateKey,
-            wallet.publicKey || ''
+            wallet.publicKey || '',
+            recipient.message // Include message if provided
           );
 
           const result = await sendTransaction(transaction);
@@ -147,7 +150,8 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
           transactionResults.push({
             ...result,
             recipient: recipient.address,
-            amount: recipient.amount
+            amount: recipient.amount,
+            message: recipient.message
           });
 
           if (result.success) {
@@ -163,7 +167,8 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error',
             recipient: recipient.address,
-            amount: recipient.amount
+            amount: recipient.amount,
+            message: recipient.message
           });
         }
       }
@@ -179,7 +184,7 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
 
         // Reset form if all successful
         if (successCount === transactionResults.length) {
-          setRecipients([{ address: '', amount: '' }]);
+          setRecipients([{ address: '', amount: '', message: '' }]);
         }
 
         // Update nonce and balance
@@ -303,6 +308,24 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
                     />
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`message-${index}`} className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Message (Optional)
+                  </Label>
+                  <Textarea
+                    id={`message-${index}`}
+                    placeholder="Add an optional message to this transaction..."
+                    value={recipient.message || ''}
+                    onChange={(e) => updateRecipient(index, 'message', e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Messages are stored on the blockchain and are publicly visible.
+                  </p>
+                </div>
               </div>
             </Card>
           ))}
@@ -336,6 +359,11 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
                     <p className={`text-sm font-medium ${result.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}`}>
                       {result.success ? 'Success' : 'Failed'} - <span className="break-all">{result.recipient}</span> ({result.amount} OCT)
                     </p>
+                    {result.message && (
+                      <p className={`text-xs mt-1 ${result.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+                        Message: "{result.message}"
+                      </p>
+                    )}
                     {result.success && result.hash && (
                       <div className="mt-2">
                         <p className="text-green-700 dark:text-green-300 text-sm">Transaction Hash:</p>
@@ -386,6 +414,10 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
             <div className="flex justify-between">
               <span>Starting Nonce:</span>
               <span className="font-mono">{nonce}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>With Messages:</span>
+              <span>{recipients.filter(r => r.message && r.message.trim()).length}</span>
             </div>
             {totalAmount > currentBalance && (
               <div className="text-red-600 text-xs mt-2">

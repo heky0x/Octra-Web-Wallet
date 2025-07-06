@@ -17,6 +17,7 @@ export interface WalletData {
 export interface MultiSendRecipient {
   address: string;
   amount: number;
+  message?: string; // Add optional message field
 }
 
 export interface TransactionData {
@@ -26,6 +27,7 @@ export interface TransactionData {
   gasPrice: number;
   gasLimit: number;
   privateKey: string;
+  message?: string; // Add optional message field
 }
 
 export interface WalletBalance {
@@ -46,6 +48,7 @@ export interface Transaction {
   nonce: number;
   ou: string;
   timestamp: number;
+  message?: string; // Add optional message field
   signature?: string;
   public_key?: string;
 }
@@ -63,6 +66,7 @@ export interface TransactionHistoryItem {
   timestamp: number;
   status: 'confirmed' | 'pending' | 'failed';
   type: 'sent' | 'received';
+  message?: string; // Add optional message field
 }
 
 // New interface for transaction details

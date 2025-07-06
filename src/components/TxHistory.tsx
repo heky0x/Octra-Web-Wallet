@@ -17,7 +17,8 @@ import {
   Copy,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  MessageSquare
 } from 'lucide-react';
 import { Wallet } from '../types/wallet';
 import { getTransactionHistory, fetchTransactionDetails, fetchPendingTransactionByHash } from '../utils/api';
@@ -32,6 +33,7 @@ interface Transaction {
   timestamp: number;
   status: 'confirmed' | 'pending' | 'failed';
   type: 'sent' | 'received';
+  message?: string;
 }
 
 interface TxHistoryProps {
@@ -185,6 +187,7 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
   }
 
   const pendingCount = transactions.filter(tx => tx.status === 'pending').length;
+  const withMessageCount = transactions.filter(tx => tx.message).length;
 
   return (
     <Card>
@@ -192,11 +195,19 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
         <CardTitle className="flex items-center gap-2">
           <History className="h-5 w-5" />
           Transaction History
-          {pendingCount > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {pendingCount} pending
-            </Badge>
-          )}
+          <div className="flex gap-2">
+            {pendingCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {pendingCount} pending
+              </Badge>
+            )}
+            {withMessageCount > 0 && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                {withMessageCount}
+              </Badge>
+            )}
+          </div>
         </CardTitle>
         <Button
           variant="outline"
@@ -231,6 +242,7 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
             <div className="text-sm text-muted-foreground">
               Found {transactions.length} transactions
               {pendingCount > 0 && ` (${pendingCount} pending)`}
+              {withMessageCount > 0 && `, ${withMessageCount} with messages`}
             </div>
             {transactions.map((tx, index) => (
               <div key={tx.hash || index}>
@@ -250,6 +262,12 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                           {tx.status}
                         </Badge>
                       </div>
+                      {tx.message && (
+                        <Badge variant="outline" className="text-xs flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          Message
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Dialog>
@@ -336,8 +354,11 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                                   </div>
                                   {selectedTx.message && (
                                     <div>
-                                      <span className="font-medium">Message:</span>
-                                      <div className="mt-1 p-2 bg-muted rounded text-sm break-words">
+                                      <span className="font-medium flex items-center gap-2">
+                                        <MessageSquare className="h-4 w-4" />
+                                        Message:
+                                      </span>
+                                      <div className="mt-1 p-3 bg-muted rounded text-sm break-words border-l-4 border-primary">
                                         {selectedTx.message}
                                       </div>
                                     </div>
@@ -402,8 +423,11 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                                   </div>
                                   {selectedTx.parsed_tx.message && (
                                     <div>
-                                      <span className="font-medium">Message:</span>
-                                      <div className="mt-1 p-2 bg-muted rounded text-sm break-words">
+                                      <span className="font-medium flex items-center gap-2">
+                                        <MessageSquare className="h-4 w-4" />
+                                        Message:
+                                      </span>
+                                      <div className="mt-1 p-3 bg-muted rounded text-sm break-words border-l-4 border-primary">
                                         {selectedTx.parsed_tx.message}
                                       </div>
                                     </div>
@@ -465,6 +489,17 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                       </div>
                     </div>
                   </div>
+
+                  {/* Message Preview */}
+                  {tx.message && (
+                    <div className="mt-3 p-3 bg-muted/50 rounded-md border-l-4 border-primary">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">Message:</span>
+                      </div>
+                      <p className="text-sm break-words">{tx.message}</p>
+                    </div>
+                  )}
                 </div>
                 
                 {index < transactions.length - 1 && <Separator className="mt-4" />}
