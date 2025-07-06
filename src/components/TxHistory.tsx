@@ -262,7 +262,7 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                             <Eye className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Transaction Details</DialogTitle>
                           </DialogHeader>
@@ -276,15 +276,16 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                             <div className="space-y-4">
                               {isPendingTransaction(selectedTx) ? (
                                 // Pending transaction details
-                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="grid grid-cols-1 gap-4 text-sm">
                                   <div>
                                     <span className="font-medium">Hash:</span>
-                                    <div className="font-mono text-xs break-all flex items-center gap-2">
-                                      {selectedTx.hash}
+                                    <div className="font-mono text-xs break-all flex items-center gap-2 mt-1">
+                                      <span className="flex-1 min-w-0">{selectedTx.hash}</span>
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => copyToClipboard(selectedTx.hash, 'Transaction Hash')}
+                                        className="flex-shrink-0"
                                       >
                                         <Copy className="h-3 w-3" />
                                       </Button>
@@ -292,51 +293,51 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                                   </div>
                                   <div>
                                     <span className="font-medium">Status:</span>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mt-1">
                                       <Clock className="h-4 w-4 text-yellow-500" />
                                       <span className="capitalize">{selectedTx.stage_status.replace('_', ' ')}</span>
                                     </div>
                                   </div>
                                   <div>
                                     <span className="font-medium">From:</span>
-                                    <div className="font-mono text-xs break-all">
+                                    <div className="font-mono text-xs break-all mt-1">
                                       {selectedTx.from}
                                     </div>
                                   </div>
                                   <div>
                                     <span className="font-medium">To:</span>
-                                    <div className="font-mono text-xs break-all">
+                                    <div className="font-mono text-xs break-all mt-1">
                                       {selectedTx.to}
                                     </div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Amount:</span>
-                                    <div>{selectedTx.amount} OCT</div>
+                                    <div className="mt-1">{selectedTx.amount} OCT</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Priority:</span>
-                                    <div className="capitalize">{selectedTx.priority}</div>
+                                    <div className="capitalize mt-1">{selectedTx.priority}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Nonce:</span>
-                                    <div>{selectedTx.nonce}</div>
+                                    <div className="mt-1">{selectedTx.nonce}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">OU:</span>
-                                    <div>{selectedTx.ou}</div>
+                                    <div className="mt-1">{selectedTx.ou}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Timestamp:</span>
-                                    <div>{new Date(selectedTx.timestamp * 1000).toLocaleString()}</div>
+                                    <div className="mt-1">{new Date(selectedTx.timestamp * 1000).toLocaleString()}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Has Public Key:</span>
-                                    <div>{selectedTx.has_public_key ? 'Yes' : 'No'}</div>
+                                    <div className="mt-1">{selectedTx.has_public_key ? 'Yes' : 'No'}</div>
                                   </div>
                                   {selectedTx.message && (
-                                    <div className="col-span-2">
+                                    <div>
                                       <span className="font-medium">Message:</span>
-                                      <div className="mt-1 p-2 bg-muted rounded text-sm">
+                                      <div className="mt-1 p-2 bg-muted rounded text-sm break-words">
                                         {selectedTx.message}
                                       </div>
                                     </div>
@@ -344,15 +345,16 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                                 </div>
                               ) : (
                                 // Confirmed transaction details
-                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="grid grid-cols-1 gap-4 text-sm">
                                   <div>
                                     <span className="font-medium">Hash:</span>
-                                    <div className="font-mono text-xs break-all flex items-center gap-2">
-                                      {selectedTx.tx_hash}
+                                    <div className="font-mono text-xs break-all flex items-center gap-2 mt-1">
+                                      <span className="flex-1 min-w-0">{selectedTx.tx_hash}</span>
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => copyToClipboard(selectedTx.tx_hash, 'Transaction Hash')}
+                                        className="flex-shrink-0"
                                       >
                                         <Copy className="h-3 w-3" />
                                       </Button>
@@ -360,53 +362,53 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                                   </div>
                                   <div>
                                     <span className="font-medium">Epoch:</span>
-                                    <div>{selectedTx.epoch}</div>
+                                    <div className="mt-1">{selectedTx.epoch}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">From:</span>
-                                    <div className="font-mono text-xs break-all">
+                                    <div className="font-mono text-xs break-all mt-1">
                                       {selectedTx.parsed_tx.from}
                                     </div>
                                   </div>
                                   <div>
                                     <span className="font-medium">To:</span>
-                                    <div className="font-mono text-xs break-all">
+                                    <div className="font-mono text-xs break-all mt-1">
                                       {selectedTx.parsed_tx.to}
                                     </div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Amount:</span>
-                                    <div>{selectedTx.parsed_tx.amount} OCT</div>
+                                    <div className="mt-1">{selectedTx.parsed_tx.amount} OCT</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Amount Raw:</span>
-                                    <div>{selectedTx.parsed_tx.amount_raw}</div>
+                                    <div className="mt-1">{selectedTx.parsed_tx.amount_raw}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Nonce:</span>
-                                    <div>{selectedTx.parsed_tx.nonce}</div>
+                                    <div className="mt-1">{selectedTx.parsed_tx.nonce}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">OU:</span>
-                                    <div>{selectedTx.parsed_tx.ou}</div>
+                                    <div className="mt-1">{selectedTx.parsed_tx.ou}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Timestamp:</span>
-                                    <div>{new Date(selectedTx.parsed_tx.timestamp * 1000).toLocaleString()}</div>
+                                    <div className="mt-1">{new Date(selectedTx.parsed_tx.timestamp * 1000).toLocaleString()}</div>
                                   </div>
                                   <div>
                                     <span className="font-medium">Source:</span>
-                                    <div>{selectedTx.source}</div>
+                                    <div className="mt-1">{selectedTx.source}</div>
                                   </div>
                                   {selectedTx.parsed_tx.message && (
-                                    <div className="col-span-2">
+                                    <div>
                                       <span className="font-medium">Message:</span>
-                                      <div className="mt-1 p-2 bg-muted rounded text-sm">
+                                      <div className="mt-1 p-2 bg-muted rounded text-sm break-words">
                                         {selectedTx.parsed_tx.message}
                                       </div>
                                     </div>
                                   )}
-                                  <div className="col-span-2">
+                                  <div>
                                     <span className="font-medium">Raw Data:</span>
                                     <div className="mt-1 p-2 bg-muted rounded text-xs font-mono break-all max-h-32 overflow-y-auto">
                                       {selectedTx.data}
@@ -445,7 +447,7 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                       </div>
                       <div>
                         <span className="text-muted-foreground">Hash:</span>
-                        <div className="font-mono">{truncateHash(tx.hash || 'N/A')}</div>
+                        <div className="font-mono break-all text-xs">{truncateHash(tx.hash || 'N/A')}</div>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -453,13 +455,13 @@ export function TxHistory({ wallet, transactions, onTransactionsUpdate, isLoadin
                         <span className="text-muted-foreground">
                           {tx.type === 'sent' ? 'To:' : 'From:'}
                         </span>
-                        <div className="font-mono">
+                        <div className="font-mono break-all text-xs">
                           {truncateAddress(tx.type === 'sent' ? tx.to : tx.from)}
                         </div>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Date:</span>
-                        <div>{formatDate(tx.timestamp || 0)}</div>
+                        <div className="text-xs">{formatDate(tx.timestamp || 0)}</div>
                       </div>
                     </div>
                   </div>

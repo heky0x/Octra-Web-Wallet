@@ -115,13 +115,14 @@ export function Balance({ wallet, balance, onBalanceUpdate, isLoading = false }:
           <div className="space-y-2">
             <label className="text-sm font-medium">Wallet Address</label>
             <div className="flex items-center space-x-2">
-              <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">
+              <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all min-w-0">
                 {wallet.address}
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => copyToClipboard(wallet.address, 'Address')}
+                className="flex-shrink-0"
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -132,25 +133,27 @@ export function Balance({ wallet, balance, onBalanceUpdate, isLoading = false }:
           <div className="space-y-2">
             <label className="text-sm font-medium">Private Key (Base64)</label>
             <div className="flex items-center space-x-2">
-              <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">
+              <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all min-w-0">
                 {showPrivateKey ? wallet.privateKey : '•'.repeat(44)}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowPrivateKey(!showPrivateKey)}
-              >
-                {showPrivateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-              {showPrivateKey && (
+              <div className="flex space-x-1 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(wallet.privateKey, 'Private Key')}
+                  onClick={() => setShowPrivateKey(!showPrivateKey)}
                 >
-                  <Copy className="h-4 w-4" />
+                  {showPrivateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-              )}
+                {showPrivateKey && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard(wallet.privateKey, 'Private Key')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -159,13 +162,14 @@ export function Balance({ wallet, balance, onBalanceUpdate, isLoading = false }:
             <div className="space-y-2">
               <label className="text-sm font-medium">Public Key (Hex)</label>
               <div className="flex items-center space-x-2">
-                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">
+                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all min-w-0">
                   {wallet.publicKey}
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => copyToClipboard(wallet.publicKey!, 'Public Key')}
+                  className="flex-shrink-0"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -180,11 +184,11 @@ export function Balance({ wallet, balance, onBalanceUpdate, isLoading = false }:
               <div className="p-3 bg-muted rounded-md">
                 <div className="grid grid-cols-3 gap-2">
                   {wallet.mnemonic.split(' ').map((word, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <span className="text-xs text-muted-foreground w-6">
+                    <div key={index} className="flex items-center space-x-2 min-w-0">
+                      <span className="text-xs text-muted-foreground w-6 flex-shrink-0">
                         {index + 1}.
                       </span>
-                      <span className="font-mono text-sm">{word}</span>
+                      <span className="font-mono text-sm truncate">{word}</span>
                     </div>
                   ))}
                 </div>
