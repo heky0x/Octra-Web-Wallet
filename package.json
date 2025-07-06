@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:extension": "npm run build && npm run copy-files",
+    "build:extension": "node build-extension.js",
     "copy-files": "cp public/manifest.json dist/ && cp public/home.html dist/ && cp public/*.png dist/",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pack": "npm run build:extension && echo 'Extension ready for packing!'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

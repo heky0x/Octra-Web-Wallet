@@ -1,0 +1,54 @@
+name: Build Chrome Extension
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build extension
+      run: npm run build:extension
+
+    - name: Create extension archive
+      run: |
+        cd dist
+        zip -r ../octra-wallet-extension.zip .
+        cd ..
+
+    - name: Upload extension artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: octra-wallet-extension
+        path: |
+          dist/
+          octra-wallet-extension.zip
+
+    - name: Upload to release (if release)
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./octra-wallet-extension.zip
+        asset_name: octra-wallet-extension-${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip
