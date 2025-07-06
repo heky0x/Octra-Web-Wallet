@@ -10,7 +10,8 @@
     "copy-files": "cp public/manifest.json dist/ && cp public/home.html dist/ && cp public/*.png dist/",
     "lint": "eslint .",
     "preview": "vite preview",
-    "pack": "npm run build:extension && echo 'Extension ready for packing!'"
+    "pack": "npm run build:extension && echo 'Extension ready for packing!'",
+    "pack:zip": "npm run build:extension && cd dist && zip -r ../octra-wallet-extension.zip . && cd .. && echo 'Extension packaged as octra-wallet-extension.zip'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
