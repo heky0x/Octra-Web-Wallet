@@ -320,24 +320,24 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
           <TabsList className="grid w-full grid-cols-3 mx-3 mt-3 h-8">
             <TabsTrigger 
               value="overview" 
-              className="flex items-center justify-center gap-1 text-xs px-2 h-full min-w-0 flex-1"
+              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
             >
               <PieChart className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Balance</span>
             </TabsTrigger>
             <TabsTrigger 
               value="send" 
-              className="flex items-center justify-center gap-1 text-xs px-2 h-full min-w-0 flex-1"
+              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
             >
               <Send className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Send</span>
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
-              className="flex items-center justify-center gap-1 text-xs px-2 h-full min-w-0 flex-1"
+              className="flex items-center justify-center gap-1 text-xs px-1 h-full"
             >
               <History className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">History</span>
+              <span className="truncate">Txs</span>
             </TabsTrigger>
           </TabsList>
 
