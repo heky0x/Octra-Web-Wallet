@@ -317,18 +317,18 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
       {/* Main Content */}
       <main className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 mx-3 mt-3">
-            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
-              <PieChart className="h-3 w-3" />
-              Balance
+          <TabsList className="grid w-full grid-cols-3 mx-3 mt-3 h-8">
+            <TabsTrigger value="overview" className="flex items-center justify-center gap-1 text-xs px-1 min-w-0">
+              <PieChart className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">Balance</span>
             </TabsTrigger>
-            <TabsTrigger value="send" className="flex items-center gap-1 text-xs">
-              <Send className="h-3 w-3" />
-              Send
+            <TabsTrigger value="send" className="flex items-center justify-center gap-1 text-xs px-1 min-w-0">
+              <Send className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">Send</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-1 text-xs">
-              <History className="h-3 w-3" />
-              History
+            <TabsTrigger value="history" className="flex items-center justify-center gap-1 text-xs px-1 min-w-0">
+              <History className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">Txs</span>
             </TabsTrigger>
           </TabsList>
 
