@@ -12,6 +12,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Ensure body has the extension-popup class
+    document.body.classList.add('extension-popup');
+    document.body.classList.remove('expanded-view');
+    
     const loadWallets = async () => {
       try {
         const storedWallets = await ExtensionStorage.getItem('wallets');

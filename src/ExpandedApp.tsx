@@ -12,6 +12,10 @@ function ExpandedApp() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Ensure body has the expanded-view class
+    document.body.classList.add('expanded-view');
+    document.body.classList.remove('extension-popup');
+    
     const loadWallets = async () => {
       try {
         const storedWallets = await ExtensionStorage.getItem('wallets');
@@ -50,7 +54,7 @@ function ExpandedApp() {
   if (isLoading) {
     return (
       <ThemeProvider defaultTheme="light" storageKey="octra-wallet-theme">
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-lg text-muted-foreground">Loading Octra Wallet...</p>
@@ -62,7 +66,7 @@ function ExpandedApp() {
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="octra-wallet-theme">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         {!wallet ? (
           <WelcomeScreen onWalletCreated={saveWallet} isExpanded={true} />
         ) : (
