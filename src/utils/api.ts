@@ -4,6 +4,7 @@ import * as nacl from 'tweetnacl';
 
 const MU_FACTOR = 1_000_000;
 const API_BASE_URL = 'https://octra.network';
+const MAX_MESSAGE_SIZE_BYTES = 1024; // 1KB limit for messages
 
 export async function fetchBalance(address: string): Promise<BalanceResponse> {
   try {
@@ -67,6 +68,25 @@ export async function sendTransaction(transaction: Transaction): Promise<{ succe
   }
 }
 
+// Helper function to validate message size
+export function validateMessageSize(message: string): { valid: boolean; sizeBytes: number; error?: string } {
+  if (!message) {
+    return { valid: true, sizeBytes: 0 };
+  }
+
+  const sizeBytes = new TextEncoder().encode(message).length;
+  
+  if (sizeBytes > MAX_MESSAGE_SIZE_BYTES) {
+    return {
+      valid: false,
+      sizeBytes,
+      error: `Message size (${sizeBytes} bytes) exceeds maximum allowed size (${MAX_MESSAGE_SIZE_BYTES} bytes)`
+    };
+  }
+
+  return { valid: true, sizeBytes };
+}
+
 export function createTransaction(
   senderAddress: string,
   recipientAddress: string,
@@ -76,6 +96,14 @@ export function createTransaction(
   publicKeyHex: string,
   message?: string
 ): Transaction {
+  // Validate message size if provided
+  if (message && message.trim()) {
+    const validation = validateMessageSize(message.trim());
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+  }
+
   // Convert amount to micro units (multiply by 1,000,000)
   const amountMu = Math.floor(amount * MU_FACTOR);
   

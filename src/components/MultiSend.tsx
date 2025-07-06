@@ -70,12 +70,26 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
     setRecipients(updated);
   };
 
+  // Helper function to get message size in bytes
+  const getMessageSizeInBytes = (message: string): number => {
+    return new TextEncoder().encode(message).length;
+  };
+
+  // Helper function to check if message exceeds 1KB
+  const isMessageTooLarge = (message: string): boolean => {
+    return getMessageSizeInBytes(message) > 1024; // 1KB = 1024 bytes
+  };
+
   const validateRecipients = () => {
     for (const recipient of recipients) {
       if (!recipient.address || !recipient.amount) {
         return false;
       }
       if (isNaN(Number(recipient.amount)) || Number(recipient.amount) <= 0) {
+        return false;
+      }
+      // Check message size
+      if (recipient.message && isMessageTooLarge(recipient.message)) {
         return false;
       }
     }
@@ -99,6 +113,17 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
     }
 
     if (!validateRecipients()) {
+      // Check for specific validation errors
+      const hasInvalidMessage = recipients.some(r => r.message && isMessageTooLarge(r.message));
+      if (hasInvalidMessage) {
+        toast({
+          title: "Error",
+          description: "One or more messages exceed the 1KB limit",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       toast({
         title: "Error",
         description: "Please fill in all recipient addresses and amounts",
@@ -267,68 +292,88 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
             </Badge>
           </div>
 
-          {recipients.map((recipient, index) => (
-            <Card key={index} className="p-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Recipient {index + 1}</span>
-                  {recipients.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeRecipient(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+          {recipients.map((recipient, index) => {
+            const messageSize = recipient.message ? getMessageSizeInBytes(recipient.message) : 0;
+            const messageTooLarge = recipient.message ? isMessageTooLarge(recipient.message) : false;
+            
+            return (
+              <Card key={index} className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Recipient {index + 1}</span>
+                    {recipients.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeRecipient(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`address-${index}`}>Address</Label>
-                    <Input
-                      id={`address-${index}`}
-                      placeholder="Recipient address (oct...)"
-                      value={recipient.address}
-                      onChange={(e) => updateRecipient(index, 'address', e.target.value)}
-                      className="font-mono"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={`address-${index}`}>Address</Label>
+                      <Input
+                        id={`address-${index}`}
+                        placeholder="Recipient address (oct...)"
+                        value={recipient.address}
+                        onChange={(e) => updateRecipient(index, 'address', e.target.value)}
+                        className="font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`amount-${index}`}>Amount (OCT)</Label>
+                      <Input
+                        id={`amount-${index}`}
+                        type="number"
+                        placeholder="0.00000000"
+                        value={recipient.amount}
+                        onChange={(e) => updateRecipient(index, 'amount', e.target.value)}
+                        step="0.00000001"
+                        min="0"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`amount-${index}`}>Amount (OCT)</Label>
-                    <Input
-                      id={`amount-${index}`}
-                      type="number"
-                      placeholder="0.00000000"
-                      value={recipient.amount}
-                      onChange={(e) => updateRecipient(index, 'amount', e.target.value)}
-                      step="0.00000001"
-                      min="0"
+                    <Label htmlFor={`message-${index}`} className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Message (Optional)
+                      <Badge variant="outline" className="text-xs">
+                        Max 1KB
+                      </Badge>
+                    </Label>
+                    <Textarea
+                      id={`message-${index}`}
+                      placeholder="Add an optional message to this transaction..."
+                      value={recipient.message || ''}
+                      onChange={(e) => updateRecipient(index, 'message', e.target.value)}
+                      rows={2}
+                      className={`resize-none ${messageTooLarge ? 'border-red-500 focus:border-red-500' : ''}`}
                     />
+                    <div className="flex items-center justify-between text-xs">
+                      <p className="text-muted-foreground">
+                        Messages are stored on the blockchain and are publicly visible.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-mono ${messageTooLarge ? 'text-red-500' : messageSize > 512 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                          {messageSize}/1024 bytes
+                        </span>
+                        {messageTooLarge && (
+                          <Badge variant="destructive" className="text-xs">
+                            Too large
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`message-${index}`} className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Message (Optional)
-                  </Label>
-                  <Textarea
-                    id={`message-${index}`}
-                    placeholder="Add an optional message to this transaction..."
-                    value={recipient.message || ''}
-                    onChange={(e) => updateRecipient(index, 'message', e.target.value)}
-                    rows={2}
-                    className="resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Messages are stored on the blockchain and are publicly visible.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
 
           <Button
             variant="outline"
@@ -422,6 +467,11 @@ export function MultiSend({ wallet, balance, onBalanceUpdate, onTransactionSucce
             {totalAmount > currentBalance && (
               <div className="text-red-600 text-xs mt-2">
                 ⚠️ Insufficient balance for this transaction
+              </div>
+            )}
+            {recipients.some(r => r.message && isMessageTooLarge(r.message)) && (
+              <div className="text-red-600 text-xs mt-2">
+                ⚠️ One or more messages exceed 1KB limit
               </div>
             )}
           </div>
