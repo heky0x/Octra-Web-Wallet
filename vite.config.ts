@@ -44,11 +44,18 @@ export default defineConfig({
           return 'assets/[name].js';
         },
         chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
+        assetFileNames: (assetInfo) => {
+          // Ensure CSS files are named consistently
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'assets/main.css';
+          }
+          return 'assets/[name].[ext]';
+        }
       }
     },
     outDir: 'dist',
     assetsDir: 'assets',
+    cssCodeSplit: false, // Bundle all CSS into one file
   },
   base: './',
 });
