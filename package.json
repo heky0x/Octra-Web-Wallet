@@ -1,5 +1,5 @@
 {
-  "name": "octra-web-wallet-extension",
+  "name": "octra-wallet-extension",
   "private": true,
   "version": "1.0.0",
   "type": "module",
