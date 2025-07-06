@@ -11,7 +11,8 @@ import {
   LogOut,
   Copy,
   PieChart,
-  ExternalLink
+  ExternalLink,
+  Maximize2
 } from 'lucide-react';
 import { Balance } from './Balance';
 import { MultiSend } from './MultiSend';
@@ -34,9 +35,10 @@ interface Transaction {
 interface WalletDashboardProps {
   wallet: Wallet;
   onDisconnect: () => void;
+  isExpanded?: boolean;
 }
 
-export function WalletDashboard({ wallet, onDisconnect }: WalletDashboardProps) {
+export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: WalletDashboardProps) {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -145,6 +147,9 @@ export function WalletDashboard({ wallet, onDisconnect }: WalletDashboardProps) 
   };
 
   const truncateAddress = (address: string) => {
+    if (isExpanded) {
+      return `${address.slice(0, 8)}...${address.slice(-6)}`;
+    }
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -155,6 +160,125 @@ export function WalletDashboard({ wallet, onDisconnect }: WalletDashboardProps) 
       window.open(url, '_blank');
     }
   };
+
+  const openExpandedView = () => {
+    if (typeof chrome !== 'undefined' && chrome.tabs) {
+      chrome.tabs.create({ url: chrome.runtime.getURL('home.html') });
+    } else {
+      window.open('/home.html', '_blank');
+    }
+  };
+
+  if (isExpanded) {
+    return (
+      <div className="min-h-screen">
+        {/* Header */}
+        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      <WalletIcon className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h1 className="text-xl font-bold">Octra Wallet</h1>
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm text-muted-foreground">
+                        {truncateAddress(wallet.address)}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(wallet.address, 'Address')}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="hidden sm:inline-flex">
+                  Connected
+                </Badge>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <ThemeToggle />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openInNewTab('https://octrascan.io')}
+                  className="hidden sm:inline-flex"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  OctraScan
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDisconnect}
+                  className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-8 max-w-6xl">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <PieChart className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="send" className="flex items-center gap-2">
+                <Send className="h-4 w-4" />
+                <span className="hidden sm:inline">Send</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">History</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+              <Balance 
+                wallet={wallet} 
+                balance={balance}
+                onBalanceUpdate={handleBalanceUpdate}
+                isLoading={isLoadingBalance}
+              />
+            </TabsContent>
+
+            <TabsContent value="send">
+              <MultiSend 
+                wallet={wallet} 
+                balance={balance}
+                onBalanceUpdate={handleBalanceUpdate}
+                onTransactionSuccess={handleTransactionSuccess}
+              />
+            </TabsContent>
+
+            <TabsContent value="history">
+              <TxHistory 
+                wallet={wallet} 
+                transactions={transactions}
+                onTransactionsUpdate={handleTransactionsUpdate}
+                isLoading={isLoadingTransactions}
+              />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[600px] w-[400px] flex flex-col">
@@ -187,6 +311,15 @@ export function WalletDashboard({ wallet, onDisconnect }: WalletDashboardProps) 
 
           <div className="flex items-center space-x-1">
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openExpandedView}
+              className="h-6 w-6 p-0"
+              title="Open Full Version"
+            >
+              <Maximize2 className="h-3 w-3" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
