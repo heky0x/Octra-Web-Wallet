@@ -4,46 +4,65 @@ import { WalletDashboard } from './components/WalletDashboard';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Wallet } from './types/wallet';
 import { Toaster } from '@/components/ui/toaster';
+import { ExtensionStorage } from './utils/storage';
 
 function App() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedWallets = localStorage.getItem('wallets');
-    if (storedWallets) {
-      const parsedWallets = JSON.parse(storedWallets);
-      setWallets(parsedWallets);
-      if (parsedWallets.length > 0) {
-        setWallet(parsedWallets[0]);
+    const loadWallets = async () => {
+      try {
+        const storedWallets = await ExtensionStorage.getItem('wallets');
+        if (storedWallets) {
+          setWallets(storedWallets);
+          if (storedWallets.length > 0) {
+            setWallet(storedWallets[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load wallets:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadWallets();
   }, []);
 
-  const saveWallet = (newWallet: Wallet) => {
+  const saveWallet = async (newWallet: Wallet) => {
     const updatedWallets = [...wallets, newWallet];
     setWallets(updatedWallets);
     setWallet(newWallet);
-    localStorage.setItem('wallets', JSON.stringify(updatedWallets));
+    await ExtensionStorage.setItem('wallets', updatedWallets);
   };
 
-  const disconnectWallet = () => {
+  const disconnectWallet = async () => {
     setWallet(null);
     setWallets([]);
-    localStorage.removeItem('wallets');
+    await ExtensionStorage.removeItem('wallets');
     
     // Reset theme to light when disconnecting
-    localStorage.setItem('octra-wallet-theme', 'light');
-    // Force theme reset by dispatching storage event
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'octra-wallet-theme',
-      newValue: 'light'
-    }));
+    await ExtensionStorage.setItem('octra-wallet-theme', 'light');
   };
+
+  if (isLoading) {
+    return (
+      <ThemeProvider defaultTheme="light" storageKey="octra-wallet-theme">
+        <div className="min-h-[600px] w-[400px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-sm text-muted-foreground">Loading wallet...</p>
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="octra-wallet-theme">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-[600px] w-[400px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         {!wallet ? (
           <WelcomeScreen onWalletCreated={saveWallet} />
         ) : (

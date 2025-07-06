@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { ExtensionStorage } from '../utils/storage';
 
 type Theme = 'dark' | 'light';
 
@@ -26,34 +27,39 @@ export function ThemeProvider({
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const storedTheme = await ExtensionStorage.getItem(storageKey);
+        if (storedTheme) {
+          setTheme(storedTheme as Theme);
+        }
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      }
+    };
+
+    loadTheme();
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
   }, [theme]);
 
-  // Listen for storage events to handle theme reset
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === storageKey && e.newValue) {
-        setTheme(e.newValue as Theme);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [storageKey]);
-
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: async (theme: Theme) => {
+      try {
+        await ExtensionStorage.setItem(storageKey, theme);
+        setTheme(theme);
+      } catch (error) {
+        console.error('Failed to save theme:', error);
+        setTheme(theme); // Still update the UI even if storage fails
+      }
     },
   };
 

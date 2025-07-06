@@ -3,11 +3,12 @@ import { BalanceResponse, Transaction, AddressHistoryResponse, TransactionDetail
 import * as nacl from 'tweetnacl';
 
 const MU_FACTOR = 1_000_000;
+const API_BASE_URL = 'https://octra.network';
 
 export async function fetchBalance(address: string): Promise<BalanceResponse> {
   try {
     // Use the address endpoint instead of balance endpoint
-    const response = await fetch(`/api/address/${address}`);
+    const response = await fetch(`${API_BASE_URL}/address/${address}`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -33,7 +34,7 @@ export async function fetchBalance(address: string): Promise<BalanceResponse> {
 
 export async function sendTransaction(transaction: Transaction): Promise<{ success: boolean; hash?: string; error?: string }> {
   try {
-    const response = await fetch(`/api/send-tx`, {
+    const response = await fetch(`${API_BASE_URL}/send-tx`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ export function createTransaction(
 // New function to fetch pending transactions from staging
 export async function fetchPendingTransactions(address: string): Promise<PendingTransaction[]> {
   try {
-    const response = await fetch(`/api/staging`);
+    const response = await fetch(`${API_BASE_URL}/staging`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -157,7 +158,7 @@ export async function fetchPendingTransactions(address: string): Promise<Pending
 // New function to fetch specific pending transaction by hash
 export async function fetchPendingTransactionByHash(hash: string): Promise<PendingTransaction | null> {
   try {
-    const response = await fetch(`/api/staging`);
+    const response = await fetch(`${API_BASE_URL}/staging`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -208,7 +209,7 @@ export async function fetchTransactionHistory(address: string): Promise<AddressH
   try {
     // Fetch both confirmed and pending transactions
     const [confirmedResponse, pendingTransactions] = await Promise.all([
-      fetch(`/api/address/${address}`),
+      fetch(`${API_BASE_URL}/address/${address}`),
       fetchPendingTransactions(address)
     ]);
     
@@ -289,7 +290,7 @@ export async function fetchTransactionHistory(address: string): Promise<AddressH
 
 export async function fetchTransactionDetails(hash: string): Promise<TransactionDetails> {
   try {
-    const response = await fetch(`/api/tx/${hash}`);
+    const response = await fetch(`${API_BASE_URL}/tx/${hash}`);
     
     if (!response.ok) {
       const errorText = await response.text();
