@@ -16,7 +16,15 @@ export class ExtensionStorage {
     } else {
       // Fallback to localStorage for development
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
+      if (!item) return null;
+      
+      try {
+        return JSON.parse(item);
+      } catch (error) {
+        // If JSON parsing fails, return the raw string value
+        // This handles cases where values are stored as plain strings
+        return item;
+      }
     }
   }
 
