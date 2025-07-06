@@ -11,7 +11,6 @@ import {
   LogOut,
   Copy,
   PieChart,
-  ExternalLink,
   Maximize2
 } from 'lucide-react';
 import { Balance } from './Balance';
@@ -153,14 +152,6 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const openInNewTab = (url: string) => {
-    if (typeof chrome !== 'undefined' && chrome.tabs) {
-      chrome.tabs.create({ url });
-    } else {
-      window.open(url, '_blank');
-    }
-  };
-
   const openExpandedView = () => {
     if (typeof chrome !== 'undefined' && chrome.tabs) {
       chrome.tabs.create({ url: chrome.runtime.getURL('home.html') });
@@ -207,15 +198,6 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
 
               <div className="flex items-center space-x-2">
                 <ThemeToggle />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openInNewTab('https://octrascan.io')}
-                  className="hidden sm:inline-flex"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  OctraScan
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -319,15 +301,6 @@ export function WalletDashboard({ wallet, onDisconnect, isExpanded = false }: Wa
               title="Open Full Version"
             >
               <Maximize2 className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openInNewTab('https://octrascan.io')}
-              className="h-6 w-6 p-0"
-              title="Open OctraScan"
-            >
-              <ExternalLink className="h-3 w-3" />
             </Button>
             <Button
               variant="ghost"

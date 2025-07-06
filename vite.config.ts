@@ -30,13 +30,16 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        home: path.resolve(__dirname, 'public/home.html'),
+        expanded: path.resolve(__dirname, 'src/expanded.tsx'),
         background: path.resolve(__dirname, 'src/background.ts'),
       },
       output: {
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'background') {
             return 'background.js';
+          }
+          if (chunkInfo.name === 'expanded') {
+            return 'assets/expanded.js';
           }
           return 'assets/[name].js';
         },
